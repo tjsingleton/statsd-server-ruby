@@ -27,10 +27,10 @@ void statsd_parser_clear_stat(statsd_parser *parser) {
   parser->sample_rate.len = 0;
 }
 
-void statsd_parser_emit(statsd_parser *parser, const char *type) {
-  parser->emit_stat(parser->stack, type, parser->name.start, parser->name.len,
-                                         parser->value.start, parser->value.len,
-                                         parser->sample_rate.start, parser->sample_rate.len);
+void statsd_parser_emit(statsd_parser *parser, stat_type type) {
+  parser->emit_stat(parser->data, type, parser->name.start, parser->name.len,
+                                        parser->value.start, parser->value.len,
+                                        parser->sample_rate.start, parser->sample_rate.len);
 
   statsd_parser_clear_stat(parser);
 }
@@ -85,7 +85,7 @@ void statsd_parser_exec(statsd_parser *parser, const char *buffer, size_t len) {
 	{
 tr12:
 #line 20 "ext/statsd/statsd_parser.c.rl"
-	{ EMIT(Counter); }
+	{ EMIT(COUNTER); }
 	goto st13;
 tr15:
 #line 14 "ext/statsd/statsd_parser.c.rl"
@@ -93,21 +93,21 @@ tr15:
 #line 17 "ext/statsd/statsd_parser.c.rl"
 	{ CAPTURE(sample_rate, p); }
 #line 20 "ext/statsd/statsd_parser.c.rl"
-	{ EMIT(Counter); }
+	{ EMIT(COUNTER); }
 	goto st13;
 tr18:
 #line 17 "ext/statsd/statsd_parser.c.rl"
 	{ CAPTURE(sample_rate, p); }
 #line 20 "ext/statsd/statsd_parser.c.rl"
-	{ EMIT(Counter); }
+	{ EMIT(COUNTER); }
 	goto st13;
 tr21:
 #line 18 "ext/statsd/statsd_parser.c.rl"
-	{ EMIT(Gauge); }
+	{ EMIT(GAUGE); }
 	goto st13;
 tr23:
 #line 19 "ext/statsd/statsd_parser.c.rl"
-	{ EMIT(Timer); }
+	{ EMIT(TIMER); }
 	goto st13;
 st13:
 	if ( ++p == pe )

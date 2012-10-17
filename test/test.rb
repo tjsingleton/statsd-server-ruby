@@ -18,21 +18,46 @@ tests = [
 joined_tests = tests.join("\n")
 
 expected = [
-  ["Gauge", "test", "123", nil],
-  ["Gauge", "test", "1232", nil],
-  ["Timer", "timer", "1235", nil],
-  ["Counter", "countera", "1234", nil],
-  ["Counter", "counterb", "12234", "1.0"],
-  ["Counter", "counterc", "1234", "1"],
-  ["Counter", "counterd", "12234", "1.01"],
-  ["Counter", "countere", "-12", "1.0"],
-  ["Gauge", "gauge", "1", nil],
-  ["Gauge", "gauge.complex", "1123", nil]
+  [:gauge, "test", 123],
+  [:gauge, "test", 1232],
+  [:timer, "timer", 1235],
+  [:counter, "countera", 1234, 1.0],
+  [:counter, "counterb", 12234, 1.0],
+  [:counter, "counterc", 1234, 1.0],
+  [:counter, "counterd", 12234, 1.01],
+  [:counter, "countere", -12, 1.0],
+  [:gauge, "gauge", 1],
+  [:gauge, "gauge.complex", 1123]
 ]
 
+class StatListener
+  attr_reader :stack
+
+  def initialize
+    @stack = []
+  end
+
+  def visit_Gauge(name, value)
+    @stack.push [:gauge, name, value]
+  end
+
+  def visit_Timer(name, value)
+    @stack.push [:timer, name, value]
+  end
+
+  def visit_Counter(name, value, sample_rate)
+    @stack.push [:counter, name, value, sample_rate]
+  end
+end
+
+
+listener = StatListener.new
+parser   = StatsD::Parser.new
+actual   = listener.stack
+
+parser.run(joined_tests, listener)
+
 N = 10_000
-parser = StatsD::Parser.new
-actual = parser.run(joined_tests)
 
 puts
 pp actual
@@ -42,8 +67,8 @@ puts
 puts "Parser: #{parser.class}, N: #{N}"
 
 Benchmark.bmbm do |x|
-  x.report("Single Line") { N.times { tests.each {|n| parser.run(n) } } }
-  x.report("Multiple Lines") { N.times { parser.run(joined_tests)  } }
+  x.report("Single Line") { N.times { tests.each {|n| parser.run(n, StatListener.new) } } }
+  x.report("Multiple Lines") { N.times { parser.run(joined_tests, StatListener.new)  } }
 end
 puts
 

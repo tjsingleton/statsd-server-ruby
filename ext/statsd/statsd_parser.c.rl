@@ -15,9 +15,9 @@
   action Name           { CAPTURE(name, fpc); }
   action Value          { CAPTURE(value, fpc); }
   action SampleRate     { CAPTURE(sample_rate, fpc); }
-  action Gauge          { EMIT(Gauge); }
-  action Timer          { EMIT(Timer); }
-  action Counter        { EMIT(Counter); }
+  action Gauge          { EMIT(GAUGE); }
+  action Timer          { EMIT(TIMER); }
+  action Counter        { EMIT(COUNTER); }
 
   include statsd_parser_common "statsd_parser_common.rl";
 }%%
@@ -35,10 +35,10 @@ void statsd_parser_clear_stat(statsd_parser *parser) {
   parser->sample_rate.len = 0;
 }
 
-void statsd_parser_emit(statsd_parser *parser, const char *type) {
-  parser->emit_stat(parser->stack, type, parser->name.start, parser->name.len,
-                                         parser->value.start, parser->value.len,
-                                         parser->sample_rate.start, parser->sample_rate.len);
+void statsd_parser_emit(statsd_parser *parser, stat_type type) {
+  parser->emit_stat(parser->data, type, parser->name.start, parser->name.len,
+                                        parser->value.start, parser->value.len,
+                                        parser->sample_rate.start, parser->sample_rate.len);
 
   statsd_parser_clear_stat(parser);
 }
