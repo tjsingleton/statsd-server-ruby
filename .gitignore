@@ -1,2 +1,3 @@
 lib/statsd.bundle
 tmp/*
+Gemfile.lock

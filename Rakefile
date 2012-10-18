@@ -1,6 +1,10 @@
 require 'rake/extensiontask'
+require 'rspec/core/rake_task'
 
 Rake::ExtensionTask.new('statsd')
+RSpec::Core::RakeTask.new(:spec)
+
+task default: :spec
 
 file 'ext/statsd/statsd_parser.c' => ['ext/statsd/statsd_parser.c.rl'] do |t|
   begin
@@ -11,3 +15,4 @@ file 'ext/statsd/statsd_parser.c' => ['ext/statsd/statsd_parser.c.rl'] do |t|
 end
 
 task ragel: 'ext/statsd/statsd_parser.c'
+
