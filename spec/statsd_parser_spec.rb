@@ -21,11 +21,11 @@ describe StatsD::Parser do
     end
   end
 
-  subject { StatsD::Parser.new }
+  subject { StatsD::Parser.new(listener) }
   let(:listener) { StatListener.new }
 
   def parsed_stack_should_eq(line, expected)
-    subject.run(line, listener)
+    subject.call(line)
     listener.stack.should == expected
   end
 

@@ -13,6 +13,7 @@ Gem::Specification.new do |s|
   s.homepage    = 'https://github.com/tjsingleton/statsd-server-ruby'
   s.extensions << 'ext/statsd/extconf.rb'
 
+  s.add_dependency('eventmachine')
   s.add_development_dependency "rake"
   s.add_development_dependency "rake-compiler"
   s.add_development_dependency "rspec", "~> 2.8.0"

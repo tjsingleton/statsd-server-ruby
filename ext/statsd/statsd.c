@@ -52,12 +52,19 @@ void emit_stat(void *stack, stat_type type, const char *name_start, size_t name_
   }
 }
 
-VALUE StatsdParser_run(VALUE self, VALUE data, VALUE visitor)
+VALUE StatsdParser_init(VALUE self, VALUE visitor)
+{
+  rb_iv_set(self, "@visitor", visitor);
+  return self;
+}
+
+VALUE StatsdParser_call(VALUE self, VALUE data)
 {
   char *dptr = RSTRING_PTR(data);
   long dlen = RSTRING_LEN(data);
   char stat_str[dlen + 1];
   VALUE stack = rb_ary_new();
+  VALUE visitor = rb_iv_get(self, "@visitor");
   statsd_parser parser;
 
   statsd_parser_init(&parser);
@@ -76,7 +83,9 @@ void Init_statsd()
 {
   mStatsd = rb_define_module("StatsD");
   cStatsdParser = rb_define_class_under(mStatsd, "Parser", rb_cObject);
-  rb_define_method(cStatsdParser, "run", StatsdParser_run, 2);
+  rb_define_method(cStatsdParser, "initialize", StatsdParser_init, 1);
+  rb_define_method(cStatsdParser, "call", StatsdParser_call, 1);
+
 
   id_visit_Counter = rb_intern("visit_Counter");
   id_visit_Gauge   = rb_intern("visit_Gauge");
