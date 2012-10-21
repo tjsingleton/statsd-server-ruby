@@ -13,10 +13,15 @@ describe StatsD, "End to End" do
   class StatsD::FlushToGraphite
     def initialize(host, port)
       @host, @port = host, port
+      @socket = UDPSocket.new
     end
 
     def flush_stats(stats)
+      lines = []
+      timestamp  = Time.now.to_i
 
+      stats.counters.each {|key, value| lines.push "#{key} #{value} #{timestamp}" }
+      @socket.send(lines.join("\n"), 0, @host, @port)
     end
   end
 
@@ -44,50 +49,52 @@ describe StatsD, "End to End" do
     end
 
     def timeout_in(seconds)
-      EM.add_timer(seconds) do
-        raise "Test timed out"
-      end
+      EM.add_timer(seconds) { raise "Test timed out" }
     end
 
-    def counter(key)
-    end
-
-    def after_next_message
-    end
-
+    # this is naive until the server is instrumented
     def after_next_flush
+      timeout_in(0.20)
+      EM.add_timer(0.15) { yield }
+    end
+
+    def shutdown
+      EM.stop
     end
   end
 
-  class FakeGraphite
-    def initialize(host, port)
+  class FakeGraphite < EventMachine::Connection
+    def initialize
+      @received = []
+    end
+
+    def receive_data(message)
+      message.split("\n").each do |line|
+        key, value, timestamp = line.split(" ")
+        @received << OpenStruct.new(key: key, value: value.to_i, timestamp: timestamp.to_i)
+      end
     end
 
     def last_message
+      @received.last
     end
   end
 
-
-  let(:config) { OpenStruct.new host: HOST, port: PORT, flush_interval: 2, backend: graphite_backend }
+  let(:graphite_backend) { StatsD::FlushToGraphite.new(HOST, PORT + 1) }
+  let(:config) { OpenStruct.new host: HOST, port: PORT, flush_interval: 0.05, backend: graphite_backend }
   let(:client) { StatsD::Client.new HOST, PORT }
   let(:server) { StatsD::ServerDriver.new config  }
-  let(:graphite) { FakeGraphite.new HOST, PORT + 1 }
-  let(:graphite_backend) { StatsD::FlushToGraphite.new HOST, PORT + 1 }
 
 
-  pending "incrementing a counter 1 time" do
+  it "incrementing a counter 1 time" do
     server.while_running do
-      server.timeout_in(3)
-
-      server.after_next_message do
-        server.counter("end_to_end.test_1").should eq(1)
-      end
+      graphite = EM.open_datagram_socket(HOST, PORT + 1, FakeGraphite)
 
       server.after_next_flush do
         message = graphite.last_message
         message.key.should eq("end_to_end.test_1")
         message.value.should eq(1)
-        message.timestamp.should be_within(10.0).of(Time.now.to_i)
+        message.timestamp.to_i.should be_within(10.0).of(Time.now.to_i)
 
         server.shutdown
       end

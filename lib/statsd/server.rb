@@ -14,10 +14,6 @@ module StatsD
       EM.add_periodic_timer(@config.flush_interval, &method(:flush_stats))
     end
 
-    def shutdown
-      EM.stop
-    end
-
     def flush_stats
       old_storage = @storage_parser_adapter.swap_storage(StatAggregation.new)
       @config.backend.flush_stats(old_storage)

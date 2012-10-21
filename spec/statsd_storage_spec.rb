@@ -24,5 +24,17 @@ describe StatsD::StatAggregation do
       subject.counters.add(key, 50, 0.5)
       subject.counters.get(key).should == 100
     end
+
+    it "iterates through the counters" do
+      expected = {}
+      expected[key] = 1
+
+      subject.counters.add(key, 1)
+
+      counters = {}
+      subject.counters.each {|key, value| counters[key] = value }
+
+      counters.should == expected
+    end
   end
 end

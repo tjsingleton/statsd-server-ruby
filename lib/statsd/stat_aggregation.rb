@@ -11,6 +11,10 @@ module StatsD
     def get(key)
       @storage[key]
     end
+
+    def each(*args, &block)
+      @storage.each(*args, &block)
+    end
   end
 
   class StatAggregation
