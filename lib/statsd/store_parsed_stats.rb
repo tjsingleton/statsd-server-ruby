@@ -11,6 +11,7 @@ module StatsD
     end
 
     def visit_Gauge(name, value)
+      @storage.gauges[name] = value
     end
 
     def visit_Timer(name, value)

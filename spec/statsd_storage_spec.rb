@@ -37,4 +37,28 @@ describe StatsD::StatAggregation do
       counters.should == expected
     end
   end
+
+  context "gauges" do
+    let(:key) { "gauge.it" }
+
+    it "can be set" do
+      subject.gauges[key] = 1
+      subject.gauges[key].should == 1
+
+      subject.gauges[key] = 5
+      subject.gauges[key].should == 5
+    end
+
+    it "iterates through the gauges" do
+      expected = {}
+      expected[key] = 1
+
+      subject.gauges[key] = 1
+
+      gauges = {}
+      subject.gauges.each {|key, value| gauges[key] = value }
+
+      gauges.should == expected
+    end
+  end
 end

@@ -18,10 +18,11 @@ module StatsD
   end
 
   class StatAggregation
-    attr_reader :counters
+    attr_reader :counters, :gauges
 
     def initialize
       @counters = CounterCollection.new
+      @gauges   = {}
     end
   end
 end

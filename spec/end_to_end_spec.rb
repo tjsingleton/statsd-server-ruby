@@ -36,6 +36,12 @@ describe StatsD, "End to End" do
         stat_count += 1
       end
 
+      stats.gauges.each do |key, value|
+        lines << "stats.gauges.#{key} #{value} #{timestamp}"
+
+        stat_count += 1
+      end
+
       calc_time = ((Time.now - start) * 1000).to_i # ms
       lines << "statsd.numStats #{stat_count} #{timestamp}"
       lines << "stats.statsd.graphiteStats.calculationtime #{calc_time} #{timestamp}"
@@ -50,8 +56,17 @@ describe StatsD, "End to End" do
       @socket = UDPSocket.new
     end
 
-    def increment(key, change = 1)
-      @socket.send("#{key}:#{change}|c", 0, @host, @port)
+    def increment(key, value = 1)
+      send "#{key}:#{value}|c"
+    end
+
+    def gauge(key, value = 0)
+      send "#{key}:#{value}|g"
+    end
+
+    private
+    def send(str)
+      @socket.send(str, 0, @host, @port)
     end
   end
 
@@ -106,9 +121,11 @@ describe StatsD, "End to End" do
   let(:client) { StatsD::Client.new HOST, PORT }
   let(:server) { StatsD::ServerDriver.new config  }
 
-  it "incrementing a counter 1 time" do
+  before do
     config.flush_interval = graphite_backend.flush_interval = 0.10
+  end
 
+  it "incrementing a counter 1 time" do
     server.while_running do
       graphite = EM.open_datagram_socket(HOST, PORT + 1, FakeGraphite)
 
@@ -124,6 +141,45 @@ describe StatsD, "End to End" do
       end
 
       client.increment("end_to_end.test_1")
+    end
+  end
+
+  it "setting a gauge" do
+    server.while_running do
+      graphite = EM.open_datagram_socket(HOST, PORT + 1, FakeGraphite)
+
+      server.after_next_flush do
+        messages = graphite.received.last
+
+        messages.should eq  "stats.gauges.end_to_end.test_2"              =>  5.0,
+                            "statsd.numStats"                             =>  1.0,
+                            "stats.statsd.graphiteStats.calculationtime"  =>  0.0
+
+        server.shutdown
+      end
+
+      client.gauge("end_to_end.test_2", 5)
+    end
+  end
+
+  it "setting both a gauge and a counter" do
+    server.while_running do
+      graphite = EM.open_datagram_socket(HOST, PORT + 1, FakeGraphite)
+
+      server.after_next_flush do
+        messages = graphite.received.last
+
+        messages.should eq  "stats.end_to_end.test_1"                     => 10.0,
+                            "stats_counts.end_to_end.test_1"              =>  1.0,
+                            "stats.gauges.end_to_end.test_2"              =>  5.0,
+                            "statsd.numStats"                             =>  2.0,
+                            "stats.statsd.graphiteStats.calculationtime"  =>  0.0
+
+        server.shutdown
+      end
+
+      client.increment("end_to_end.test_1")
+      client.gauge("end_to_end.test_2", 5)
     end
   end
 end

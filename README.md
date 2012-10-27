@@ -12,6 +12,10 @@ A Ruby statsd server
 * stats.#{key} - the count adjusted to count / per second
 * stats_counts.#{key} - the count
 
+# Gauges
+
+* stats.gauges.#{key} - the value of the gauge
+
 ## Inspirations
 
 * Etsy's statsd (https://github.com/etsy/statsd)
