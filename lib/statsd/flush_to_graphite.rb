@@ -5,14 +5,14 @@ module StatsD
 
     attr_writer :flush_interval, :threshold_percentages
 
-    def initialize(host, port)
+    def initialize(host, port, socket = UDPSocket.new)
       @host, @port = host, port
-      @socket = UDPSocket.new
+      @socket = socket
       @flush_interval = DEFAULT_FLUSH_INTERVAL
       @threshold_percentage = DEFAULT_THRESHOLD_PERCENTAGES
     end
 
-    def receive_stats(stats, collect_time)
+    def receive_stats(stats, collect_time = Time.now)
       stat_count = 0
       calc_start = Time.now
       timestamp  = collect_time.to_i
