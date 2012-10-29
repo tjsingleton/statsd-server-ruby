@@ -16,7 +16,7 @@ module StatsD
 
     def flush_stats
       old_storage = @storage_parser_adapter.swap_storage(StatAggregation.new)
-      @config.backend.flush_stats(old_storage)
+      @config.backend.receive_stats(old_storage, Time.now)
     end
   end
 end
