@@ -64,4 +64,60 @@ describe StatsD::FlushToGraphite do
     last_message_key("stats_counts.hello").should == 10
     last_message_key("statsd.numStats").should == 1
   end
+
+  context "timers" do
+    it "sends all the stats" do
+      stats.timers.add("hello", 1000)
+      flush_stats
+
+      last_message_key("stats.timers.hello.count").should == 1
+      last_message_key("stats.timers.hello.lower").should == 1000
+      last_message_key("stats.timers.hello.mean").should == 1000
+      last_message_key("stats.timers.hello.mean_90").should == 1000
+      last_message_key("stats.timers.hello.std").should == 0
+      last_message_key("stats.timers.hello.sum").should == 1000
+      last_message_key("stats.timers.hello.sum_90").should == 1000
+      last_message_key("stats.timers.hello.upper").should == 1000
+      last_message_key("stats.timers.hello.upper_90").should == 1000
+      last_message_key("statsd.numStats").should == 1
+    end
+
+    it "can calculate different threshold percentages" do
+      backend.threshold_percentages = [50.0, 25.0]
+
+      stats.timers.add("hello", 100)
+      stats.timers.add("hello", 75)
+      stats.timers.add("hello", 50)
+      stats.timers.add("hello", 50)
+      flush_stats
+
+      last_message_key("stats.timers.hello.mean_50").should == 50
+      last_message_key("stats.timers.hello.sum_50").should == 100
+      last_message_key("stats.timers.hello.upper_50").should == 50
+
+      last_message_key("stats.timers.hello.mean_25").should == 50
+      last_message_key("stats.timers.hello.sum_25").should == 50
+      last_message_key("stats.timers.hello.upper_25").should == 50
+    end
+
+    it "calculates the correct std, mean, max, and lower" do
+      stats.timers.add("hello", 10)
+      9.times { stats.timers.add("hello", 9) }
+
+      [65, 63, 67, 64, 68, 62, 70, 66, 68, 67, 69, 71, 66, 65, 70].each do |n|
+        stats.timers.add("world", n)
+      end
+
+
+      flush_stats
+
+      last_message_key("stats.timers.hello.std").should be_within(0.0001).of(0.31622776601684)
+      last_message_key("stats.timers.world.std").should be_within(0.0001).of(2.6583202716503)
+      last_message_key("stats.timers.world.mean").should be_within(0.0001).of(66.733333333333)
+      last_message_key("stats.timers.world.mean").should be_within(0.0001).of(66.733333333333)
+      last_message_key("stats.timers.world.lower").should == 62
+      last_message_key("stats.timers.world.upper").should == 71
+      last_message_key("stats.timers.world.count").should == 15
+    end
+  end
 end

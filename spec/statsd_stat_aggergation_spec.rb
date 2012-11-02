@@ -61,4 +61,15 @@ describe StatsD::StatAggregation do
       gauges.should == expected
     end
   end
+
+  context "timers" do
+    let(:key) { "time.it"}
+
+    it "collects the timing data" do
+      subject.timers.add(key, 100)
+      subject.timers.add(key, 200)
+
+      subject.timers.get(key).should == [100, 200]
+    end
+  end
 end

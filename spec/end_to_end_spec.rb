@@ -25,6 +25,10 @@ describe StatsD, "End to End" do
       send "#{key}:#{value}|g"
     end
 
+    def timing(key, value)
+      send "#{key}:#{value}|ms"
+    end
+
     private
     def send(str)
       @socket.send(str, 0, @host, @port)
@@ -141,6 +145,32 @@ describe StatsD, "End to End" do
 
       client.increment("end_to_end.test_1")
       client.gauge("end_to_end.test_2", 5)
+    end
+  end
+
+  it "setting a timer" do
+    server.while_running do
+      graphite = EM.open_datagram_socket(HOST, PORT + 1, FakeGraphite)
+
+      server.after_next_flush do
+        messages = graphite.received.last
+
+        messages.delete("stats.statsd.graphiteStats.calculationtime").should_not be_nil
+        messages.should eq  "stats.timers.end_to_end.test_3.mean_90"      => 10.0,
+                            "stats.timers.end_to_end.test_3.upper_90"     => 10.0,
+                            "stats.timers.end_to_end.test_3.sum_90"       => 10.0,
+                            "stats.timers.end_to_end.test_3.std"          =>  0.0,
+                            "stats.timers.end_to_end.test_3.upper"        => 10.0,
+                            "stats.timers.end_to_end.test_3.lower"        => 10.0,
+                            "stats.timers.end_to_end.test_3.count"        =>  1.0,
+                            "stats.timers.end_to_end.test_3.sum"          => 10.0,
+                            "stats.timers.end_to_end.test_3.mean"         => 10.0,
+                            "statsd.numStats"                             =>  1.0
+
+        server.shutdown
+      end
+
+      client.timing("end_to_end.test_3", 10)
     end
   end
 end

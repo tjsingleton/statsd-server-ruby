@@ -9,7 +9,7 @@ module StatsD
       @host, @port = host, port
       @socket = socket
       @flush_interval = DEFAULT_FLUSH_INTERVAL
-      @threshold_percentage = DEFAULT_THRESHOLD_PERCENTAGES
+      @threshold_percentages = DEFAULT_THRESHOLD_PERCENTAGES
     end
 
     def receive_stats(stats, collect_time = Time.now)
@@ -29,6 +29,43 @@ module StatsD
 
       stats.gauges.each do |key, value|
         lines << "stats.gauges.#{key} #{value} #{timestamp}"
+
+        stat_count += 1
+      end
+
+      stats.timers.each do |key, values|
+        values.sort!
+
+        count = values.length
+        min   = values.first
+        max   = values.last
+
+        sum      = values.reduce(:+)
+        mean     = sum / count.to_f
+        variance = values.reduce(0){|accum, x| accum + (x - mean) ** 2 } / (count - 1)
+        stddev   = Math.sqrt(variance)
+
+        @threshold_percentages.each do |threshold|
+          threshold_label  = threshold.to_i
+          threshold_index  = (threshold / 100 * count).round
+          threshold_values = values[0...threshold_index]
+
+          threshold_count  = threshold_values.length
+          threshold_sum    = threshold_values.reduce(:+)
+          threshold_mean   = threshold_sum / threshold_count.to_f
+          threshold_max    = threshold_values.last
+
+          lines << "stats.timers.#{key}.mean_#{threshold_label} #{threshold_mean} #{timestamp}"
+          lines << "stats.timers.#{key}.sum_#{threshold_label} #{threshold_sum} #{timestamp}"
+          lines << "stats.timers.#{key}.upper_#{threshold_label} #{threshold_max} #{timestamp}"
+        end
+
+        lines << "stats.timers.#{key}.count #{count} #{timestamp}"
+        lines << "stats.timers.#{key}.lower #{min} #{timestamp}"
+        lines << "stats.timers.#{key}.mean #{mean} #{timestamp}"
+        lines << "stats.timers.#{key}.std #{stddev} #{timestamp}"
+        lines << "stats.timers.#{key}.sum #{sum} #{timestamp}"
+        lines << "stats.timers.#{key}.upper #{max} #{timestamp}"
 
         stat_count += 1
       end

@@ -15,6 +15,7 @@ module StatsD
     end
 
     def visit_Timer(name, value)
+      @storage.timers.add(name, value)
     end
 
     def visit_Counter(name, value, sample_rate)

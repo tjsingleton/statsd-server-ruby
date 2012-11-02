@@ -21,8 +21,17 @@ describe StatsD::StoreParsedStats do
 
       gauges.should eq("key" => 1)
     end
-  end
 
+    it "timers" do
+      timers = double
+      storage = double timers: timers
+
+      adapter = StatsD::StoreParsedStats.new(storage)
+      timers.should_receive(:add).with("key", 1)
+
+      adapter.visit_Timer("key", 1)
+    end
+  end
 
   it "is able to swap the storage" do
     counters = double
