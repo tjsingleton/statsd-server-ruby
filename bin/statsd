@@ -1,0 +1,4 @@
+#!/usr/bin/env ruby
+require_relative "../lib/statsd/cli"
+
+StatsD::CLI.new(ARGV).run

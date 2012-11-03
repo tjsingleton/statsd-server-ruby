@@ -115,7 +115,6 @@ describe StatsD::FlushToGraphite do
         stats.timers.add("world", n)
       end
 
-
       flush_stats
 
       last_message_key("stats.timers.hello.std").should be_within(0.0001).of(0.31622776601684)

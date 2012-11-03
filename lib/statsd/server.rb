@@ -4,6 +4,7 @@ require_relative "../statsd" # parser
 require_relative "store_parsed_stats"
 require_relative "stat_aggregation"
 require_relative "connection"
+require_relative "flush_to_graphite"
 
 module StatsD
   class Server

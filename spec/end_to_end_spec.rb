@@ -1,8 +1,5 @@
 require 'ostruct'
-require 'em/protocols/line_protocol'
-
 require_relative '../lib/statsd/server'
-require_relative '../lib/statsd/flush_to_graphite'
 
 describe StatsD, "End to End" do
   HOST, PORT = '127.0.0.1', 8125
