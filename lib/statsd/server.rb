@@ -1,5 +1,10 @@
 require "eventmachine"
 
+require_relative "../statsd" # parser
+require_relative "store_parsed_stats"
+require_relative "stat_aggregation"
+require_relative "connection"
+
 module StatsD
   class Server
     def initialize(config)
@@ -15,8 +20,14 @@ module StatsD
     end
 
     def flush_stats
+      flush_time = Time.now
+
       @storage_parser_adapter.swap_storage(StatAggregation.new) do |old_storage|
-        @config.backend.receive_stats(old_storage, Time.now)
+        EM.connect(@config.graphite_host, @config.graphite_port) do |socket|
+          backend = StatsD::FlushToGraphite.new(socket)
+          backend.flush_interval= @config.flush_interval
+          backend.receive_stats(old_storage, flush_time)
+        end
       end
     end
   end

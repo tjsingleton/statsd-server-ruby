@@ -1,3 +1,5 @@
+require "eventmachine"
+
 module StatsD
   class FlushToGraphite
     DEFAULT_FLUSH_INTERVAL = 10.0
@@ -5,17 +7,16 @@ module StatsD
 
     attr_writer :flush_interval, :threshold_percentages
 
-    def initialize(host, port, socket = UDPSocket.new)
-      @host, @port = host, port
-      @socket = socket
+    def initialize(socket)
       @flush_interval = DEFAULT_FLUSH_INTERVAL
       @threshold_percentages = DEFAULT_THRESHOLD_PERCENTAGES
+      @socket = socket
     end
 
     def receive_stats(stats, collect_time = Time.now)
       stat_count = 0
       calc_start = Time.now
-      timestamp  = collect_time.to_i
+      timestamp  = "#{collect_time.to_i}\n"
       lines      = []
 
       stats.counters.each do |key, value|
@@ -74,7 +75,8 @@ module StatsD
       lines << "statsd.numStats #{stat_count} #{timestamp}"
       lines << "stats.statsd.graphiteStats.calculationtime #{calc_time} #{timestamp}"
 
-      @socket.send(lines.join("\n"), 0, @host, @port)
+      @socket.send_data lines.join
+      @socket.close_connection_after_writing
     end
   end
 end

@@ -4,20 +4,19 @@ require_relative '../lib/statsd/flush_to_graphite'
 class FakeSocket
   attr_reader :last_message, :last_host, :last_port
 
-  def send(message, _, host, port)
-    @host = host
-    @port = port
-
+  def send_data(message)
     @last_message = {}
     message.split("\n").each do |line|
       key, value, timestamp = line.split(" ")
       @last_message[key] = {key: key, value: value.to_f, timestamp: timestamp}
     end
   end
+
+  def close_connection_after_writing; end
 end
 
 describe StatsD::FlushToGraphite do
-  let(:backend) { StatsD::FlushToGraphite.new('host', 'port', socket) }
+  let(:backend) { StatsD::FlushToGraphite.new(socket) }
   let(:socket)  { FakeSocket.new }
   let(:stats)   { StatsD::StatAggregation.new }
 
@@ -55,13 +54,21 @@ describe StatsD::FlushToGraphite do
     last_message_key("statsd.numStats").should == 1
   end
 
-  it "takes into account the configured flush_interval when " do
+  it "takes into account the configured flush_interval" do
     backend.flush_interval = 1
     stats.counters.add("hello", 10)
     flush_stats
 
     last_message_key("stats.hello").should == 10
     last_message_key("stats_counts.hello").should == 10
+    last_message_key("statsd.numStats").should == 1
+
+    backend.flush_interval = 2
+    stats.counters.add("hello", 10)
+    flush_stats
+
+    last_message_key("stats.hello").should == 10
+    last_message_key("stats_counts.hello").should == 20
     last_message_key("statsd.numStats").should == 1
   end
 

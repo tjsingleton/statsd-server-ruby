@@ -1,3 +1,5 @@
+require "eventmachine"
+
 module StatsD
   # Accepts StatsD Protocol messages and forwards them to a message handler
   #
