@@ -9,27 +9,27 @@ A Ruby statsd server [![Build Status](https://secure.travis-ci.org/tjsingleton/s
 
 ## Counters
 
-* stats.#{key} - the count adjusted to count / per second
-* stats_counts.#{key} - the count
+* stats.KEY - the count adjusted to count / per second
+* stats_counts.KEY - the count
 
 ## Gauges
 
-* stats.gauges.#{key} - the value of the gauge
+* stats.gauges.KEY - the value of the gauge
 
 ## Timers
 
-* stats.timers.#{key}.count - number of timings
-* stats.timers.#{key}.lower - minimum timing
-* stats.timers.#{key}.mean - average
-* stats.timers.#{key}.std - standard deviation
-* stats.timers.#{key}.sum - sum of timings
-* stats.timers.#{key}.upper - maximum timing
+* stats.timers.KEY.count - number of timings
+* stats.timers.KEY.lower - minimum timing
+* stats.timers.KEY.mean - average
+* stats.timers.KEY.std - standard deviation
+* stats.timers.KEY.sum - sum of timings
+* stats.timers.KEY.upper - maximum timing
 
 The default percentile is 90. You can provide a list of percentiles to calculate. For each percentile we calculate:
 
-* stats.timers.#{key}.mean_#{percent} - the mean of that percentile
-* stats.timers.#{key}.sum_#{percent} - the sum of that percentile
-* stats.timers.#{key}.upper_#{percent} - the max of that percentile
+* stats.timers.KEY.mean_PERCENT - the mean of that percentile
+* stats.timers.KEY.sum_PERCENT - the sum of that percentile
+* stats.timers.KEY.upper_PERCENT - the max of that percentile
 
 ## Inspirations
 

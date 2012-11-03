@@ -52,12 +52,22 @@ void emit_stat(void *stack, stat_type type, const char *name_start, size_t name_
   }
 }
 
+ /*
+ * Document-method: StatsD::Parser#initialize
+ * @overload initialize(visitor)
+ * @param [StoreParsedStats] visitor
+ */
 VALUE StatsdParser_init(VALUE self, VALUE visitor)
 {
   rb_iv_set(self, "@visitor", visitor);
   return self;
 }
 
+/*
+ * Document-method: StatsD::Parser#call
+ * @overload call(message)
+ * @param [String] message
+ */
 VALUE StatsdParser_call(VALUE self, VALUE data)
 {
   char *dptr = RSTRING_PTR(data);
@@ -79,6 +89,28 @@ VALUE StatsdParser_call(VALUE self, VALUE data)
   return stack;
 }
 
+/* Document-class: StatsD::Parser
+ * Translates a StatsD Protocol message into messages sent to it's visitor.
+ *
+ * @example Print out the parsed message
+ *   class VisitMessagePrinter
+ *     def method_missing(method_sym, *arguments, &block)
+ *       if method_sym.to_s =~ /^visit_(.*)$/
+ *         puts [" *", $1, *arguments].join(" ")
+ *       else
+ *         super
+ *       end
+ *     end
+ *   end
+ *
+ *   parser = StatsD::Parser.new(VisitMessagePrinter.new)
+ *   parser.call("timer:1000|ms\ncounter:1|c\ngauge:10|g\n")
+ *
+ *   # Output:
+ *   # * Timer timer 1000
+ *   # * Counter counter 1 1.0
+ *   # * Gauge gauge 10
+ */
 void Init_statsd()
 {
   mStatsd = rb_define_module("StatsD");
