@@ -89,6 +89,12 @@ VALUE StatsdParser_call(VALUE self, VALUE data)
   return stack;
 }
 
+/* Document-module: StatsD
+ * Namespace for StatsD
+ * @see StatsD::Server
+ */
+
+
 /* Document-class: StatsD::Parser
  * Translates a StatsD Protocol message into messages sent to it's visitor.
  *
