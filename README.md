@@ -1,6 +1,6 @@
 # StatsD
 
-A Ruby statsd server
+A Ruby statsd server [![Build Status](https://secure.travis-ci.org/tjsingleton/statsd-server-ruby.png)](http://travis-ci.org/tjsingleton/statsd-server-ruby)
 
 ## Each Flush
 
