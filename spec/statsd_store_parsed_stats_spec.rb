@@ -44,8 +44,12 @@ describe StatsD::StoreParsedStats do
     counters.should_receive(:add).with("key", 1, 1.0)
     adapter.visit_Counter("key", 1, 1.0)
 
-    old_storage = adapter.swap_storage(new_storage)
-    old_storage.should eq(storage)
+    yielded = false
+    adapter.swap_storage(new_storage) do |old_storage|
+      yielded = true
+      old_storage.should eq(storage)
+    end
+    yielded.should be_true, "#swap_storage did not yield"
 
     new_counters.should_receive(:add).with("key", 1, 1.0)
     adapter.visit_Counter("key", 1, 1.0)
