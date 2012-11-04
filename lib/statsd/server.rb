@@ -26,7 +26,8 @@ module StatsD
       @storage_parser_adapter.swap_storage(StatAggregation.new) do |old_storage|
         EM.connect(@config.graphite_host, @config.graphite_port) do |socket|
           backend = StatsD::FlushToGraphite.new(socket)
-          backend.flush_interval= @config.flush_interval
+          backend.flush_interval = @config.flush_interval
+          backend.threshold_percentages = @config.threshold_percentages
           backend.receive_stats(old_storage, flush_time)
         end
       end

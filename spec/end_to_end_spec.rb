@@ -1,4 +1,3 @@
-require 'ostruct'
 require_relative '../lib/statsd/server'
 
 describe StatsD, "End to End" do
@@ -83,7 +82,7 @@ describe StatsD, "End to End" do
     end
   end
 
-  let(:config) { OpenStruct.new host: HOST, port: PORT, graphite_host: HOST, graphite_port: PORT + 1, flush_interval: 0.020 }
+  let(:config) { StatsD::Config.new {|c| c.flush_interval = 0.020 } }
   let(:client) { StatsD::Client.new HOST, PORT }
   let(:server) { StatsD::ServerDriver.new config  }
 

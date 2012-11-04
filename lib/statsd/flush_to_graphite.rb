@@ -1,16 +1,17 @@
 require "eventmachine"
+require_relative "config"
 
 module StatsD
   class FlushToGraphite
-    DEFAULT_FLUSH_INTERVAL = 10.0
-    DEFAULT_THRESHOLD_PERCENTAGES = [90.0]
+    DEFAULT_FLUSH_INTERVAL        = Config::DEFAULT_FLUSH_INTERVAL
+    DEFAULT_THRESHOLD_PERCENTAGES = Config::DEFAULT_THRESHOLD_PERCENTAGES
 
     attr_writer :flush_interval, :threshold_percentages
 
     def initialize(socket)
-      @flush_interval = DEFAULT_FLUSH_INTERVAL
+      @flush_interval        = DEFAULT_FLUSH_INTERVAL
       @threshold_percentages = DEFAULT_THRESHOLD_PERCENTAGES
-      @socket = socket
+      @socket                = socket
     end
 
     def receive_stats(stats, collect_time = Time.now)
