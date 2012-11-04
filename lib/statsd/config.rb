@@ -7,6 +7,15 @@ module StatsD
     DEFAULT_FLUSH_INTERVAL        = 10.0
     DEFAULT_THRESHOLD_PERCENTAGES = [90.0]
 
+    def self.from_hash(hash)
+      config = new
+      config.members.each do |key|
+        key = key.to_s
+        config.send "#{key}=", hash[key] if hash.has_key?(key)
+      end
+      config
+    end
+
     def initialize
       yield(self) if block_given?
       self.host                  ||= DEFAULT_HOST

@@ -30,4 +30,17 @@ describe StatsD::Config do
     config = StatsD::Config.new {|n| n.port = 1 }
     config.port.should == 1
   end
+
+  it "can be instantiated from a hash by invoking the writers" do
+    config = StatsD::Config.from_hash "host" => "example.com",
+                                      "threshold_percentages" => 1
+    config.host.should == "example.com"
+    config.threshold_percentages.should == [1.0]
+  end
+
+  it "instantiated from a hash still has default values" do
+      config = StatsD::Config.from_hash "host" => "example.com",
+                                        "threshold_percentages" => 1
+      config.port.should == StatsD::Config::DEFAULT_PORT
+    end
 end
