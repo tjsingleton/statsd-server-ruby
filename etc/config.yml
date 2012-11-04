@@ -1,0 +1,7 @@
+---
+host: localhost
+port: 8125
+graphite_host: localhost
+graphite_port: 2003
+flush_interval: 10.0
+threshold_percentages: [90.0]
