@@ -1,6 +1,8 @@
 # StatsD
 
-A Ruby statsd server [![Build Status](https://secure.travis-ci.org/tjsingleton/statsd-server-ruby.png)](http://travis-ci.org/tjsingleton/statsd-server-ruby)
+A Ruby statsd server
+
+[![Build Status](https://secure.travis-ci.org/tjsingleton/statsd-server-ruby.png)](http://travis-ci.org/tjsingleton/statsd-server-ruby) [![Code Climate](https://codeclimate.com/badge.png)](https://codeclimate.com/github/tjsingleton/statsd-server-ruby)
 
 ## Each Flush
 
